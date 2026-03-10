@@ -1,0 +1,2 @@
+# Neural Network
+This folder contains my notes and other materials while studying neural networks, basically from 3blue1brown's [Neural Networks](https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr) series. 
