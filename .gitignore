@@ -1,2 +1,9 @@
-Lee's ML\Slides\*
-Inschool Lecture\Slides\*
+Lee's ML/Slides/
+Inschool Lecture/Slides/
+
+# LaTeX temporary build outputs (keep .tex and final .pdf)
+*.aux
+*.log
+*.synctex.gz
+**/build_check/
+*.before-*.tex

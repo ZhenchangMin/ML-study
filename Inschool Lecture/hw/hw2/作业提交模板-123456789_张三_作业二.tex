@@ -1,0 +1,563 @@
+%\documentclass[a4paper]{article}
+%\usepackage{geometry}
+%\geometry{a4paper,scale=0.8}
+\documentclass[10pt]{article}
+\usepackage{ctex}
+\usepackage{indentfirst}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{CJK}
+\usepackage[fleqn]{amsmath}
+\usepackage{parskip}
+\usepackage{listings}
+\usepackage{fancyhdr}
+
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+
+% 设置页眉
+\fancyhead[L]{2026年秋季}
+\fancyhead[C]{机器学习}
+\fancyhead[R]{作业二}
+
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+% 定义Python代码风格
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,     
+    captionpos=b,        
+    keepspaces=true,     
+    numbers=left,        
+    numbersep=5pt,       
+    showspaces=false,    showstringspaces=false,
+    showtabs=false,      
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+\begin{document}
+
+\textbf{\color{blue} \Large 姓名：闵振昌 \ \ \ 学号：241880334 \ \ \ \today}
+
+
+
+\section*{一. (30 points) 线性回归与冗余属性}
+考虑一元线性回归模型 $\hat y=wx+b$，最小化 $J(w,b)=\frac12\sum_{i=1}^{m}(y_i-wx_i-b)^2$。数据如下，记训练集均值为 $\bar x$ 与 $\bar y$。
+\begin{center}
+\begin{tabular}{ccccc}
+\toprule
+训练样本 & 1 & 2 & 3 & 4 \\
+\midrule
+$x$ & 0 & 1 & 2 & 3 \\
+$y$ & 1 & 2 & 2 & 3 \\
+\bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{ccc}
+\toprule
+测试样本 & 1 & 2 \\
+\midrule
+$x$ & 4 & 5 \\
+$y$ & 4 & 4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+1. 对 $J$ 分别关于 $b$ 和 $w$ 求导，推导 $b^*=\bar y-w^*\bar x$ 与 $w^*$ 的表达式。假设 $\sum_i(x_i-\bar x)^2>0$。（10 points）
+
+2. 求本题训练集上的 $w^*,b^*$，计算两个测试样本的预测值及测试集均方误差 $\mathrm{MSE}=\frac1n\sum_i(y_i-\hat y_i)^2$。（5 points）
+
+3. 为每个样本增加属性 $x_2=2x$，模型变为 $\hat y=w_1x+w_2x_2+b$。说明 $(w_1,w_2)$ 是否唯一，并写出两组能得到与第2问相同预测的参数。测试样本也满足 $x_2=2x$。（5 points）
+
+4. 补全以下代码中的两个函数，输出参数、测试预测值和 MSE。只能使用 NumPy 实现核心计算，不使用现成回归模型。（10 points）
+\begin{lstlisting}[language=Python,caption=线性回归代码样例]
+import numpy as np
+X_train = np.array([[0.], [1.], [2.], [3.]])
+y_train = np.array([1., 2., 2., 3.])
+X_test = np.array([[4.], [5.]])
+y_test = np.array([4., 4.])
+def linear_regression(X_train, y_train):
+    # X_train: (m, 1); y_train: (m,)
+    pass  # Return scalar w and scalar b.
+def MSE(y_true, y_pred):
+    pass  # Return the mean squared error.
+w, b = linear_regression(X_train, y_train)
+y_pred = w * X_test[:, 0] + b
+print(w, b, y_pred, MSE(y_test, y_pred))
+\end{lstlisting}
+
+\textbf{\large 解:}
+
+\subsection*{1.}
+分别对截距和斜率求偏导，令其等于零：
+\begin{align*}
+\frac{\partial J}{\partial b}
+&=-\sum_{i=1}^{m}(y_i-wx_i-b)=0,\\
+\frac{\partial J}{\partial w}
+&=-\sum_{i=1}^{m}x_i(y_i-wx_i-b)=0.
+\end{align*}
+由第一个方程得
+\[
+\sum_{i=1}^{m}y_i-w\sum_{i=1}^{m}x_i-mb=0,
+\qquad {b^*=\bar y-w^*\bar x}.
+\]
+将其代入第二个方程，得到
+\[
+\sum_{i=1}^{m}x_i\bigl[(y_i-\bar y)-w^*(x_i-\bar x)\bigr]=0.
+\]
+利用 $\sum_i(y_i-\bar y)=\sum_i(x_i-\bar x)=0$，整理得
+\[
+\sum_{i=1}^{m}(x_i-\bar x)(y_i-\bar y)
+=w^*\sum_{i=1}^{m}(x_i-\bar x)^2.
+\]
+由题设 $\sum_i(x_i-\bar x)^2>0$，可得
+\[
+{w^*=\frac{\sum_{i=1}^{m}(x_i-\bar x)(y_i-\bar y)}
+{\sum_{i=1}^{m}(x_i-\bar x)^2}},\qquad
+{b^*=\bar y-w^*\bar x}.
+\]
+
+\subsection*{2.}
+训练集均值为 $\bar x=1.5$、$\bar y=2$，且
+\begin{align*}
+\sum_i(x_i-\bar x)^2&=2.25+0.25+0.25+2.25=5,\\
+\sum_i(x_i-\bar x)(y_i-\bar y)&=1.5+0+0+1.5=3.
+\end{align*}
+故 ${w^*=0.6,\ b^*=1.1}$，预测函数为 $\hat y=0.6x+1.1$。
+两个测试样本的预测值分别为
+\[
+\hat y(4)=3.5,\qquad \hat y(5)=4.1.
+\]
+测试集均方误差为
+\[
+{\mathrm{MSE}=\frac{(4-3.5)^2+(4-4.1)^2}{2}=0.13}.
+\]
+
+\subsection*{3.}
+由于 $x_2=2x$，新模型可写为
+\[
+\hat y=(w_1+2w_2)x+b.
+\]
+只要 $w_1+2w_2=0.6$ 且 $b=1.1$，就与第2问得到相同的预测，
+因此 $(w_1,w_2)$ 不唯一。两组参数为
+\[
+{(w_1,w_2,b)=(0.6,0,1.1)},\qquad
+{(w_1,w_2,b)=(0,0.3,1.1)}.
+\]
+测试样本同样满足 $x_2=2x$，所以这两组参数的预测值均为 $3.5$、$4.1$。
+
+\subsection*{4.}
+\begin{lstlisting}[language=Python,caption=一元线性回归与均方误差的完整实现]
+import numpy as np
+
+X_train = np.array([[0.], [1.], [2.], [3.]])
+y_train = np.array([1., 2., 2., 3.])
+X_test = np.array([[4.], [5.]])
+y_test = np.array([4., 4.])
+
+def linear_regression(X_train, y_train):
+    x = np.asarray(X_train, dtype=float)[:, 0]
+    y = np.asarray(y_train, dtype=float)
+    x_mean = np.mean(x)
+    y_mean = np.mean(y)
+    dx = x - x_mean
+    denominator = np.sum(dx ** 2)
+    w = np.sum(dx * (y - y_mean)) / denominator
+    b = y_mean - w * x_mean
+    return float(w), float(b)
+
+def MSE(y_true, y_pred):
+    y_true = np.asarray(y_true, dtype=float)
+    y_pred = np.asarray(y_pred, dtype=float)
+    return float(np.mean((y_true - y_pred) ** 2))
+
+w, b = linear_regression(X_train, y_train)
+y_pred = w * X_test[:, 0] + b
+print(w, b, y_pred, MSE(y_test, y_pred))
+\end{lstlisting}
+输出为：
+\begin{lstlisting}
+0.6 1.1 [3.5 4.1] 0.12999999999999998
+\end{lstlisting}
+即 $w=0.6$、$b=1.1$，预测值为 $3.5$、$4.1$，$\mathrm{MSE}=0.13$。
+
+
+\newpage
+\section*{二. (25 points) 对数几率回归与类别不平衡}
+某二分类任务规定少数类为正类 $y=1$，多数类为负类 $y=0$。对数几率回归输出正类概率
+\[
+p(\mathbf{x})=\frac{1}{1+\exp[-(\textbf{w}^{\top}\mathbf{x}+b)]}.
+\]
+给定已训练模型在10个评价样本上的输出如下。此模型的训练集共有100个样本，其中正类20个、负类80个；下表不是训练集。
+\begin{center}
+\begin{tabular}{c*{10}{c}}
+\toprule
+编号 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\midrule
+$y$ & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 \\
+$p$ & .05 & .10 & .15 & .20 & .25 & .30 & .35 & .55 & .40 & .80 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{规定：}使用阈值 $t$ 时，$p\geq t$ 判为正类，否则判为负类。所有问题均保持模型参数不变。
+
+1. 当阈值为 $0.5$ 时，将预测规则等价改写为关于 $\mathbf{w}^{\top}\mathbf{x}+b$ 的不等式（消去概率 $p$），并说明该模型决策边界的形状。（5分）
+
+
+2. 分别在阈值 $0.5$ 与 $0.3$ 下，计算 $TP,FP,TN,FN$ 及准确率、查准率、查全率。说明降低阈值对本题结果的影响。（8 points）
+
+3. 按教材第3.6节的再缩放思想，本题规定当
+\[
+\frac{p}{1-p}\geq\frac{m^+}{m^-}
+\]
+时判为正类，其中 $m^+,m^-$ 分别为训练集正、负例数。推导等价的概率阈值，求其在本题的数值。简述这种固定模型调整阈值的方法与欠采样后重新训练的区别，不要求二者效果相同。（7 points）
+
+4. 补全以下函数，返回第2问所需的计数和指标，并用两个阈值核对手算结果。（5 points）
+\begin{lstlisting}[language=Python,caption=分类评价代码框架]
+import numpy as np
+y = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
+p = np.array([.05, .10, .15, .20, .25,
+              .30, .35, .55, .40, .80])
+def evaluate(y, p, threshold):
+    # Return: TP, FP, TN, FN, accuracy, precision, recall.
+    # If a metric denominator is zero, return 0.
+    pass
+for t in [0.5, 0.3]:
+    print(t, evaluate(y, p, t))
+\end{lstlisting}
+\noindent 提示：准确率 $=\frac{TP+TN}{TP+FP+TN+FN}$，查准率 $=\frac{TP}{TP+FP}$，查全率 $=\frac{TP}{TP+FN}$。
+
+\textbf{\large 解:}
+
+\subsection*{1.}
+记 $z=\mathbf w^{\top}\mathbf x+b$。则
+\[
+p\geq\frac12
+\iff \frac{1}{1+e^{-z}}\geq\frac12
+\iff e^{-z}\leq1
+\iff z\geq0.
+\]
+所以 $\mathbf w^{\top}\mathbf x+b\geq0$ 时预测正类，否则预测负类。
+当 $\mathbf w\neq\mathbf0$ 时，决策边界是
+$\mathbf w^{\top}\mathbf x+b=0$，在二维空间为直线，在高维空间为超平面。
+
+\subsection*{2.}
+当 $t=0.5$ 时，预测为正类的是样本8、10。
+样本10是真正例，样本8是假正例，样本9是假负例，其余7个样本是真负例。
+因此
+\[
+TP=1,\quad FP=1,\quad TN=7,\quad FN=1,
+\]
+\[
+\mathrm{Accuracy}=\frac{1+7}{10}=0.8,\qquad
+\mathrm{Precision}=\frac{1}{2}=0.5,\qquad
+\mathrm{Recall}=\frac{1}{2}=0.5.
+\]
+当 $t=0.3$ 时，样本6、7、8、9、10预测为正类；其中概率恰为
+$0.30$ 的样本6也包括在内。故
+\[
+TP=2,\quad FP=3,\quad TN=5,\quad FN=0,
+\]
+\[
+\mathrm{Accuracy}=\frac{2+5}{10}=0.7,\qquad
+\mathrm{Precision}=\frac{2}{5}=0.4,\qquad
+\mathrm{Recall}=\frac{2}{2}=1.
+\]
+本题降低阈值后，多识别了1个正例，同时增加了2个假正例。
+查全率由 $0.5$ 提升至 $1$，查准率由 $0.5$ 降至 $0.4$，准确率由 $0.8$ 降至 $0.7$。
+
+\subsection*{3.}
+对于 $0<p<1$，有
+\begin{align*}
+\frac{p}{1-p}\geq\frac{m^+}{m^-}
+&\iff m^-p\geq m^+(1-p)\\
+&\iff (m^++m^-)p\geq m^+\\
+&\iff p\geq\frac{m^+}{m^++m^-}.
+\end{align*}
+代入训练集正、负例数 $m^+=20$、$m^-=80$，得到等价概率阈值
+\[
+{t=\frac{20}{20+80}=0.2}.
+\]
+固定模型调整阈值只改变类别判定规则，模型参数和输出概率保持不变。
+欠采样后重新训练会减少多数类训练样本，并重新估计模型参数，输出概率也可能改变。
+因此两种方法的结果不一定相同。
+
+\subsection*{4.}
+\begin{lstlisting}[language=Python,caption=二分类计数与评价指标的完整实现]
+import numpy as np
+
+y = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
+p = np.array([.05, .10, .15, .20, .25,
+              .30, .35, .55, .40, .80])
+
+def evaluate(y, p, threshold):
+    y = np.asarray(y)
+    p = np.asarray(p, dtype=float)
+    pred_positive = p >= threshold
+    actual_positive = y == 1
+    actual_negative = y == 0
+    TP = int(np.sum(pred_positive & actual_positive))
+    FP = int(np.sum(pred_positive & actual_negative))
+    TN = int(np.sum(~pred_positive & actual_negative))
+    FN = int(np.sum(~pred_positive & actual_positive))
+
+    total = TP + FP + TN + FN
+    accuracy = (TP + TN) / total if total else 0.0
+    precision = TP / (TP + FP) if TP + FP else 0.0
+    recall = TP / (TP + FN) if TP + FN else 0.0
+    return TP, FP, TN, FN, accuracy, precision, recall
+
+for t in [0.5, 0.3]:
+    print(t, evaluate(y, p, t))
+\end{lstlisting}
+输出为：
+\begin{lstlisting}
+0.5 (1, 1, 7, 1, 0.8, 0.5, 0.5)
+0.3 (2, 3, 5, 0, 0.7, 0.4, 1.0)
+\end{lstlisting}
+与第2问的手算结果一致。
+
+
+\newpage
+\section*{三. (20 points) 连续属性划分与缺失值}
+二分类数据集 $D$ 含8个样本，连续属性 $x$ 与类别 $y$ 如下。每个样本的初始权重均为1；$\tilde D$ 表示属性 $x$ 不缺失的样本集合。对数以2为底，结果保留三位小数。
+\begin{center}
+\begin{tabular}{c*{8}{c}}
+\toprule
+编号 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\midrule
+$x$ & 1 & 2 & 3 & 4 & 5 & 6 & 缺失 & 缺失 \\
+$y$ & 0 & 0 & 1 & 1 & 0 & 1 & 0 & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+按 $x\leq t$ 和 $x>t$ 将非缺失样本划分为左、右两个分支。
+
+1. 列出由相邻不同属性值的中点构成的全部候选阈值，计算非缺失样本集合的熵 $H(\tilde D)$。（5 points）
+
+2. 为减少计算，本问只比较 $t=2.5$ 与 $t=4.5$。分别计算它们在 $\tilde D$ 上的信息增益，并从这两个阈值中选出更优者。（5 points）
+
+3. 考虑缺失值时，按教材方法使用
+\[
+\mathrm{Gain}(D,x,t)=\rho\,\mathrm{Gain}(\tilde D,x,t),
+\qquad \rho=\frac{|\tilde D|}{|D|}.
+\]
+计算第2问两个阈值修正后的信息增益，判断选择是否改变。（5 points）
+
+4. 使用第2问选出的阈值。按非缺失样本在各分支的权重占比，将每个缺失样本以相应权重同时下传到左右分支。写出样本7和8各自在左右分支的权重，并计算分配后左右分支的正、负类权重总和。（5 points）
+
+\noindent 提示：$H(S)=-\sum_{c\in\{0,1\}}p_c\log_2p_c$，规定 $0\log_2 0=0$。第2问只在非缺失样本上计算
+\[
+\mathrm{Gain}(\tilde D,x,t)=H(\tilde D)
+-\frac{|\tilde D_L|}{|\tilde D|}H(\tilde D_L)
+-\frac{|\tilde D_R|}{|\tilde D|}H(\tilde D_R).
+\]
+
+\textbf{\large 解:}
+
+\subsection*{1.}
+非缺失属性值依次为 $1,2,3,4,5,6$，因此全部候选阈值为
+\[
+{\{1.5,\ 2.5,\ 3.5,\ 4.5,\ 5.5\}}.
+\]
+$\tilde D$ 共6个样本，正、负类各3个，故
+\[
+{H(\tilde D)=-\frac12\log_2\frac12-\frac12\log_2\frac12=1.000}.
+\]
+
+\subsection*{2.}
+当 $t=2.5$ 时，左分支为样本1、2，类别均为0，故
+$H(\tilde D_L)=0$；右分支为样本3、4、5、6，含3个正例和1个负例，故
+\[
+H(\tilde D_R)=-\frac34\log_2\frac34-\frac14\log_2\frac14
+\approx0.811.
+\]
+于是
+\[
+\mathrm{Gain}(\tilde D,x,2.5)
+=1-\frac26\times0-\frac46H(\tilde D_R)
+\approx{0.459}.
+\]
+当 $t=4.5$ 时，左分支为样本1、2、3、4，正、负例各2个；
+右分支为样本5、6，正、负例各1个。因此两个分支的熵均为 $1.000$，
+\[
+\mathrm{Gain}(\tilde D,x,4.5)
+=1-\frac46\times1-\frac26\times1={0.000}.
+\]
+只在本题要求比较的两个阈值中，${t=2.5}$ 更优。
+
+\subsection*{3.}
+非缺失样本所占比例为
+\[
+\rho=\frac{|\tilde D|}{|D|}=\frac68=0.750.
+\]
+修正后的信息增益为
+\begin{align*}
+\mathrm{Gain}(D,x,2.5)
+&=\frac68\,\mathrm{Gain}(\tilde D,x,2.5)\approx{0.344},\\
+\mathrm{Gain}(D,x,4.5)
+&=\frac68\times0={0.000}.
+\end{align*}
+同一属性的两个候选阈值均乘以相同的正数 $\rho$，
+所以二者优劣次序不变，仍选择 $t=2.5$。
+
+\subsection*{4.}
+在 $t=2.5$ 时，非缺失样本的左、右分支权重分别为2、4，
+所以缺失样本分配到左右分支的比例分别为 $1/3$、$2/3$。
+样本7和8的初始权重均为1，因此
+\begin{center}
+\begin{tabular}{c|c|cc}
+\toprule
+样本 & 类别 & 左分支权重 & 右分支权重\\
+\midrule
+7 & 0 & $1/3\approx0.333$ & $2/3\approx0.667$\\
+8 & 1 & $1/3\approx0.333$ & $2/3\approx0.667$\\
+\bottomrule
+\end{tabular}
+\end{center}
+加入这些样本后，各分支的类别权重为
+\begin{align*}
+W_L^+&=0+\frac13=\frac13\approx0.333,&
+W_L^-&=2+\frac13=\frac73\approx2.333,\\
+W_R^+&=3+\frac23=\frac{11}{3}\approx3.667,&
+W_R^-&=1+\frac23=\frac53\approx1.667.
+\end{align*}
+
+
+\newpage
+\section*{四. (25 points) 决策树的预剪枝与后剪枝}
+某数据集有两个二值属性 $A,B\in\{0,1\}$。训练集与验证集的样本统计如下，每行表示相同属性取值下各类别的样本数量。
+\begin{center}
+\begin{tabular}{ccrrrr}
+\toprule
+\multicolumn{2}{c}{属性} & \multicolumn{2}{c}{训练集} & \multicolumn{2}{c}{验证集} \\
+$A$ & $B$ & $y=0$ & $y=1$ & $y=0$ & $y=1$ \\
+\midrule
+0 & 0 & 7 & 0 & 3 & 0 \\
+0 & 1 & 0 & 3 & 0 & 2 \\
+1 & 0 & 0 & 4 & 0 & 2 \\
+1 & 1 & 2 & 0 & 3 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+本题\textbf{固定划分顺序}：先在根节点按 $A$ 划分，再在两个子节点分别按 $B$ 划分，不要求比较划分指标。叶节点的预测类别始终由到达该节点的\textbf{训练样本多数类}决定；若数量相同则预测0。
+
+1. 写出根节点不划分时的预测类别、按 $A$ 划分后两个叶节点的预测类别，以及完整两层树四个叶节点的预测类别。（5 points）
+
+2. 预剪枝规则为：只有划分后\textbf{整棵树的验证准确率严格提高}，才允许该划分。计算根节点划分前、后的验证准确率，确定预剪枝结果。（7 points）
+
+3. 从完整两层树开始进行后剪枝，顺序为：先检查 $A=0$ 子树，再检查 $A=1$ 子树，最后检查根节点。每次把待检查子树替换为一个多数类叶节点；若整棵树的验证准确率不下降，就保留该剪枝，否则恢复子树。计算各次候选剪枝后的验证准确率，画出或用清晰规则表示最终树。（8 points）
+
+4. 结合本题解释为什么预剪枝和后剪枝可能得到不同结果，并说明验证集与测试集在剪枝实验中的不同用途。（5 points）
+
+\noindent 提示：训练集共16个样本，验证集共10个样本。后剪枝被拒绝后，下一步仍以恢复后的树为基础。本题只需手算与分析，不要求另选数据集或实现剪枝算法。
+
+\textbf{\large 解:}
+
+\subsection*{1.}
+根节点训练样本中，负例数为 $7+2=9$，正例数为 $3+4=7$，
+因此不划分时预测类别为 ${0}$。
+根节点按 $A$ 划分后：
+\begin{itemize}
+\item $A=0$：负例7个、正例3个，叶节点预测0；
+\item $A=1$：负例2个、正例4个，叶节点预测1。
+\end{itemize}
+继续分别按 $B$ 划分后，四个叶节点的预测为
+\begin{center}
+\begin{tabular}{cc|rr|c}
+\toprule
+$A$ & $B$ & 训练负例数 & 训练正例数 & 预测类别\\
+\midrule
+0 & 0 & 7 & 0 & 0\\
+0 & 1 & 0 & 3 & 1\\
+1 & 0 & 0 & 4 & 1\\
+1 & 1 & 2 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{2.}
+根节点不划分时，所有验证样本均预测为0，正确数为 $3+3=6$，所以
+\[
+\mathrm{Acc}_{\text{不划分}}=\frac6{10}=60\%.
+\]
+根节点按 $A$ 划分后，$A=0$ 的叶节点预测0，在对应验证样本中正确3个；
+$A=1$ 的叶节点预测1，在对应验证样本中正确2个。因此
+\[
+\mathrm{Acc}_{\text{按 }A\text{ 划分}}=\frac{3+2}{10}=50\%.
+\]
+准确率从 $60\%$ 降到 $50\%$，不满足严格提高的条件，故拒绝根节点划分。
+最终预剪枝树仅含一个预测0的根叶节点，验证准确率为 ${60\%}$，
+也不会再尝试其下的 $B$ 划分。
+
+\subsection*{3.}
+完整两层树的四个叶节点都能正确分类对应的验证样本，初始验证准确率为
+\[
+\mathrm{Acc}_{\text{完整树}}=\frac{3+2+2+3}{10}=100\%.
+\]
+按题目顺序逐一检查：
+
+\textbf{检查 $A=0$ 子树：}
+将其替换为由训练多数类决定的类别0叶节点。
+此时 $A=0$ 的5个验证样本中正确3个，未剪的 $A=1$ 子树仍正确5个，故
+\[
+\mathrm{Acc}_{\text{候选剪枝 }A=0}=\frac{3+5}{10}=80\%.
+\]
+低于当前的 $100\%$，拒绝此次剪枝并恢复完整树。
+
+\textbf{检查 $A=1$ 子树：}
+从恢复后的完整树出发，将该子树替换为预测1的叶节点。
+$A=0$ 子树正确5个，$A=1$ 的叶节点正确2个，故
+\[
+\mathrm{Acc}_{\text{候选剪枝 }A=1}=\frac{5+2}{10}=70\%.
+\]
+仍低于 $100\%$，拒绝此次剪枝并恢复完整树。
+
+\textbf{检查根节点：}
+将整棵树替换为预测0的叶节点，得到
+\[
+\mathrm{Acc}_{\text{候选剪枝根节点}}=\frac6{10}=60\%.
+\]
+低于 $100\%$，故也拒绝此次剪枝。
+最终保留完整两层树，验证准确率为 ${100\%}$。
+按先 $A$、再 $B$ 的顺序，其明确预测规则为
+\[
+{\hat y(A,B)=
+\begin{cases}
+0,& A=0,\ B=0,\\
+1,& A=0,\ B=1,\\
+1,& A=1,\ B=0,\\
+0,& A=1,\ B=1.
+\end{cases}}
+\]
+
+\subsection*{4.}
+本题按 $A$ 划分后，验证准确率由 $60\%$ 降为 $50\%$，预剪枝因此停止划分，
+得到预测0的单叶树，无法继续考察下一层按 $B$ 划分带来的收益。
+后剪枝先生成完整两层树，其验证准确率为 $100\%$，三次候选剪枝均使准确率下降，
+因此保留完整树。这说明当前一步划分效果不好，并不代表后续划分不能改善结果，
+所以预剪枝和后剪枝可能得到不同结果。
+
+验证集用于比较剪枝前后的准确率、决定是否剪枝；测试集用于在最终树确定后
+评价其泛化性能，不参与剪枝决策。
+
+
+\end{document}
